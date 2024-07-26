@@ -1,0 +1,62 @@
+import socket
+import subprocess
+import nmap
+
+def scan_open_ports(target_ip):
+    """Scans a target IP for open ports."""
+    scanner = nmap.PortScanner()
+    scanner.scan(target_ip, arguments='-sT')  # TCP scan
+
+    open_ports = []
+    for host in scanner.all_hosts():
+        for proto in scanner[host].all_protocols():
+            lport = scanner[host][proto].keys()
+            for port in lport:
+                if scanner[host][proto][port]['state'] == 'open':
+                    open_ports.append((port, scanner[host][proto][port]['name']))
+
+    return open_ports
+
+def check_software_version(target_ip, port, service_name):
+    """Checks the software version of a service on a specific port."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.connect((target_ip, port))
+        banner = s.recv(1024).decode('utf-8')
+        s.close()
+
+        # Parse banner to extract version information
+        # This part would require specific parsing logic based on the service
+        version = "Unknown"
+
+        return version
+    except Exception as e:
+        print(f"Error checking software version: {e}")
+        return None
+
+def check_misconfigurations(target_ip, port, service_name):
+    """Checks for common misconfigurations based on the service."""
+    # Placeholder for misconfiguration checks
+    # This would involve specific logic for each service
+    misconfigurations = []
+    return misconfigurations
+
+def main():
+    target_ip = input("Enter target IP address: ")
+
+    open_ports = scan_open_ports(target_ip)
+    print("Open ports:")
+    for port, service in open_ports:
+        print(f"{port}/{service}")
+
+        version = check_software_version(target_ip, port, service)
+        print(f"Version: {version}")
+
+        misconfigs = check_misconfigurations(target_ip, port, service)
+        if misconfigs:
+            print("Misconfigurations:")
+            for misconfig in misconfigs:
+                print(f"- {misconfig}")
+
+if __name__ == "__main__":
+    main()
